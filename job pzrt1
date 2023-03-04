@@ -1,0 +1,80 @@
+import operator
+
+# Function to calculate the priority of a job
+def calculate_priority(job):
+    return 1 + job["waiting_time"] / job["estimated_run_time"]
+
+# Function to calculate the waiting time of a job
+def calculate_waiting_time(job, current_time):
+    return current_time - job["arrival_time"]
+
+# Function to print the Gantt chart
+def print_gantt_chart(gantt_chart):
+    print("Gantt chart:")
+
+    for item in gantt_chart:
+        print(f"{item['job_id']} ({item['start_time']} - {item['end_time']})", end=" ")
+
+    print("\n")
+
+# Function to print the waiting time of each job
+def print_waiting_time(jobs):
+    print("Waiting time:")
+
+    total_waiting_time = 0
+
+    for job in jobs:
+        print(f"Job {job['job_id']}: {job['waiting_time']}")
+        total_waiting_time += job['waiting_time']
+
+    print(f"Average waiting time: {total_waiting_time / len(jobs)}\n")
+
+# Function to simulate the scheduling algorithm
+def schedule_jobs(jobs):
+    current_time = 0
+    gantt_chart = []
+
+    while jobs:
+        # Sort the jobs based on priority
+        jobs.sort(key=calculate_priority)
+
+        # Get the job with the highest priority
+        job = jobs.pop(0)
+
+        # Update waiting time and priority of other jobs
+        for other_job in jobs:
+            other_job["waiting_time"] += job["estimated_run_time"]
+            other_job["priority"] = calculate_priority(other_job)
+
+        # Calculate waiting time and update gantt chart
+        waiting_time = calculate_waiting_time(job, current_time)
+        gantt_chart.append({"job_id": job["job_id"], "start_time": current_time, "end_time": current_time + job["estimated_run_time"]})
+        current_time += job["estimated_run_time"]
+
+        # Print the priority and waiting time of the job
+        print(f"Job {job['job_id']}: Priority = {job['priority']:.2f}, Waiting time = {waiting_time}")
+
+        # Update waiting time of the job
+        job["waiting_time"] = waiting_time
+
+    print_gantt_chart(gantt_chart)
+    print_waiting_time(jobs)
+
+# Get the input dynamically at runtime from the user
+number_of_jobs = int(input("Enter the number of jobs: "))
+jobs = []
+
+for i in range(number_of_jobs):
+    arrival_time = int(input(f"Enter the arrival time for job {i}: "))
+    estimated_run_time = int(input(f"Enter the estimated run time for job {i}: "))
+
+    jobs.append({
+        "job_id": i,
+        "arrival_time": arrival_time,
+        "estimated_run_time": estimated_run_time,
+        "waiting_time": 0,
+        "priority": 1
+    })
+
+# Run the scheduling algorithm
+schedule_jobs(jobs)
